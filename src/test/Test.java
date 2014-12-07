@@ -14,7 +14,7 @@ public class Test {
     private static List<String> spamHams;
     private static boolean crossValidation = true;
     static int spamCount = 2000;
-    static int hamCount = 1000;
+    static int hamCount = 2000;
     static int[] interestingTokens = { 5, 10, 15, 20, 30, 40, 50, 80, 100, Integer.MAX_VALUE};
     static int[] accuracyHam = new int[interestingTokens.length];
     static int[] accuracySpam = new int[interestingTokens.length];
@@ -39,6 +39,13 @@ public class Test {
         int ngram = Integer.parseInt(args[2]);
         boolean rp = Boolean.parseBoolean(args[3]);
         int dim = Integer.parseInt(args[4]);
+        /**
+         * 80% for train. 20% for test
+         */
+        //Collections.shuffle(spamHams);
+        spamHams = DataReader.readFile(spamHamFile);
+        trainSet = new ArrayList<String>((int)(0.8*(spamCount+hamCount)));
+        testSet = new ArrayList<String>((int)(0.2*(spamCount+hamCount)));
         if(classifier.equals("nb")) {
                 indexFileRead_TREC(cf, ngram);
         }else if(classifier.equals("svm")) {
@@ -61,22 +68,91 @@ public class Test {
         svm.cf = cf;
         svm.ngram = ngram;
 		try {
-			svm.svmTrain(trainSet);
-			svm.svmPredict(testSet);
+            if(!crossValidation) {
+                int testSpam = (int) (0.2 * spamCount);
+                int testHam = (int) (0.2 * hamCount);
+                spamCount -= testSpam;
+                hamCount -= testHam;
+
+                int i = 0;
+                while (i < spamHams.size() && (spamCount > 0 || hamCount > 0 || testSpam > 0 || testHam > 0)) {
+                    String email = spamHams.get(i);
+                    if (email.startsWith("spam")) {
+                        if (spamCount > 0) {
+                            trainSet.add(email);
+                            spamCount--;
+                        } else if (testSpam > 0) {
+                            testSet.add(email);
+                            testSpam--;
+                        }
+                    } else {
+                        if (hamCount > 0) {
+                            trainSet.add(email);
+                            hamCount--;
+                        } else if (testHam > 0) {
+                            testSet.add(email);
+                            testHam--;
+                        }
+                    }
+                    i++;
+                }
+                svm.svmTrain(trainSet);
+                svm.svmPredict(testSet);
+            }else {
+                ArrayList<String> spamCollection = new ArrayList<String>(spamCount);
+                ArrayList<String> hamCollection = new ArrayList<String>(hamCount);
+                int i = 0;
+                while (i < spamHams.size() && (spamCount > 0 || hamCount > 0)) {
+                    String email = spamHams.get(i);
+
+                    if (email.startsWith("spam") && spamCount > 0) {
+                        spamCollection.add(email);
+                        spamCount--;
+                    } else if(email.startsWith("ham") && hamCount > 0) {
+                        hamCollection.add(email);
+                        hamCount--;
+                    }
+                    i++;
+                }
+                int cv =1;
+                for (i = 1; i <= 16; i*=2) {
+                    System.out.println();
+                    System.out.println("=================== Cross Validation - Fold "+cv+++" ===================");
+                    System.out.println();
+                    int j=i;
+                    int partSpam = spamCollection.size()/5;
+                    int partHam = hamCollection.size()/5;
+                    int startSpam = 0;
+                    int startHam = 0;
+                    for(int k=0; k<5; k++) {
+                        if ((j == (1 << k))) {
+                            //add in test set
+                            testSet.addAll(spamCollection.subList(startSpam, startSpam + partSpam));
+                            testSet.addAll(hamCollection.subList(startHam, startHam + partHam));
+                        } else{
+                            trainSet.addAll(spamCollection.subList(startSpam, startSpam + partSpam));
+                            trainSet.addAll(hamCollection.subList(startHam, startHam + partHam));
+                        }
+                        startSpam += partSpam;
+                        startHam += partHam;
+                    }
+                    svm.svmTrain(trainSet);
+                    svm.svmPredict(testSet);
+                    testSet.clear();
+                    trainSet.clear();
+                }
+            }
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+        System.out.println("Spam Accuracy = "+(double)svm.spam/svm.totalSpam*100+
+                "% ("+svm.spam+"/"+svm.totalSpam+") (classification)\n");
+        System.out.println("Ham Accuracy = "+(double)svm.ham/svm.totalHam*100+
+                "% ("+svm.ham+"/"+svm.totalHam+") (classification)\n");
 	}
 
     public static void indexFileRead_TREC(boolean cf, int ngram){
-        spamHams = DataReader.readFile(spamHamFile);
-        trainSet = new ArrayList<String>((int)(0.8*(spamCount+hamCount)));
-        testSet = new ArrayList<String>((int)(0.2*(spamCount+hamCount)));
-        /**
-         * 80% for train. 20% for test
-         */
-        //Collections.shuffle(spamHams);
         if(!crossValidation) {
             int testSpam = (int)(0.2*spamCount);
             int testHam = (int)(0.2*hamCount) ;
@@ -122,8 +198,11 @@ public class Test {
                 }
                 i++;
             }
-
+            int cv=1;
             for (i = 1; i <= 16; i*=2) {
+                System.out.println();
+                System.out.println("=================== Cross Validation - Fold "+cv+++" ===================");
+                System.out.println();
                 int j=i;
                 int partSpam = spamCollection.size()/5;
                 int partHam = hamCollection.size()/5;

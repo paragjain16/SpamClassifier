@@ -25,6 +25,10 @@ public class SVMTest {
     private int numDataPoints = 30;
     private static String path = "C:/Users/Parag/Desktop/Project/trec07p";
     private static String datapath = path + "/data/";
+    public double totalHam =0;
+    public double totalSpam=0;
+    public double ham=0;
+    public double spam=0;
 
 	public SVMTest(){
         randomNodes = new ArrayList<Integer>(numDataPoints);
@@ -334,25 +338,17 @@ public class SVMTest {
 		int correct = 0;
 		int total = actualLabels.length;
 		double error = 0;
-        int totalspam = 0;
-        int totalham = 0;
-		int spam =0;
-        int ham =0;
 
         for(int i=0;i<predictedLables.length;i++){
             if(actualLabels[i] == -1.0){
-                totalspam++;
+                totalSpam++;
                 if(predictedLables[i] == -1.0)
                     spam++;
             }else{
-                totalham++;
+                totalHam++;
                 if(predictedLables[i] == 1.0)
                     ham++;
         	}
         }
-        System.out.println("Spam Accuracy = "+(double)spam/totalspam*100+
-				 "% ("+spam+"/"+totalspam+") (classification)\n");
-            System.out.println("Ham Accuracy = "+(double)ham/totalham*100+
-                    "% ("+ham+"/"+totalham+") (classification)\n");
 	}
 }

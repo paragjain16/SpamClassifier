@@ -5,9 +5,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashSet;
 
-/**
- * Created by Parag on 30-11-2014.
- */
 public class StopWords {
     private HashSet<String> stopwords;
     private boolean used = true;

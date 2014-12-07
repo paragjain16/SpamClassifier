@@ -227,11 +227,14 @@ public class NaiveBayes {
     public void calcSpamicityWithSmoothing() {
         double spamPrior = 0.5;
         double s = 3;
-        spamProb = numberOfSpamWords / (numberOfSpamWords+numberOfHamWords);
-        hamProb = numberOfHamWords / (numberOfSpamWords+numberOfHamWords);
+        numberOfSpamWords = Math.max(numberOfSpamWords, 1);
+        numberOfHamWords = Math.max(numberOfHamWords, 1);
+        //spamProb = numberOfSpam / (numberOfSpam+numberOfHam);
+        //hamProb = numberOfHam / (numberOfSpam+numberOfHam);
         System.out.println("Spam Prob " + spamProb);
         System.out.println("Ham Prob "+hamProb);
         spamPrior = spamProb;
+
         for (Map.Entry<String, Integer> entry : spamMap.entrySet()) {
             String word = entry.getKey();
             double spamCount = entry.getValue();
