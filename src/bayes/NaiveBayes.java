@@ -28,7 +28,7 @@ public class NaiveBayes {
     public int ngram = 4;
     private boolean noHTML = false;
     private boolean noPrefix = false;
-    private boolean trimChar = true;
+    private boolean trimChar = false;
     //private boolean trimWord = true;
     private boolean nullify = true;
     private boolean filterWord = true;
@@ -37,7 +37,7 @@ public class NaiveBayes {
     private double numberOfHamWords = 0;
     private double spamProb = 0.5;
     private double hamProb = 0.5;
-    double multiply = 1.0;
+    double multiply = 2.0;
     int wrdcounts = 0;
     int wrdcounth = 0;
 
@@ -47,14 +47,19 @@ public class NaiveBayes {
 
     double appreciate = 1.0;
 
-    public NaiveBayes() {
+    public NaiveBayes(boolean cf, int ngram) {
         spamMap = new HashMap<String, Integer>();
         hamMap = new HashMap<String, Integer>();
         spamicityMap = new HashMap<String, Double>();
         numberOfSpam = 0;
         numberOfHam = 0;
         stopWords = new StopWords();
-        System.out.println("Regex used for delimiter = "+regex);
+        if(cf){
+            this.cf = cf;
+            this.ngram = ngram;
+            System.out.println("Using "+ngram+" characters as tokens");
+        }else
+            System.out.println("Regex used for delimiter = "+regex);
     }
 
     public String removeStopWords(String line){
@@ -217,7 +222,7 @@ public class NaiveBayes {
 
     public void countHam(String word) {
         numberOfHamWords++;
-        int add =1;
+        int add = 1;
         if(multiply == 2.0) {
             add = 2;
             numberOfHamWords++;
@@ -419,10 +424,13 @@ public class NaiveBayes {
 
     public boolean filterLine(String line){
         //if(isEmailHeader(line)) return true;
-        if(line.startsWith("X-"))
+        /*if(!cf) {
+            if (line.startsWith("X-"))
+                return true;
+        }*/
+        //Remove attachment data which is chunk of repeating alphanumeric/special characters
+        if (line.length() > 30 && line.matches("[^ ]*"))
             return true;
-       /* if(line.length() >30 && line.matches("[^ ]*"))
-            return true;*/
         /*if(line.startsWith("Received"))
             return true;
         if(line.length() > 1000 && line.matches("[^ ]*"))
@@ -430,7 +438,7 @@ public class NaiveBayes {
         return false;
     }
     public boolean filterWord(String word){
-        /*if(stopWords.isStopWord(word))
+       /* if(stopWords.isStopWord(word))
             return true;
         if(word.matches("[0-9 ]*"))
             return true;

@@ -43,6 +43,10 @@ public class Test {
         int ngram = Integer.parseInt(args[2]);
         boolean rp = Boolean.parseBoolean(args[3]);
         int dim = Integer.parseInt(args[4]);
+        runProgram(classifier,cf, ngram, rp, dim);
+	}
+
+    public static void runProgram(String classifier, boolean cf, int ngram, boolean rp, int dim){
         /**
          * 80% for train. 20% for test
          */
@@ -51,19 +55,19 @@ public class Test {
         trainSet = new ArrayList<String>((int)(0.8*(spamCount+hamCount)));
         testSet = new ArrayList<String>((int)(0.2*(spamCount+hamCount)));
         if(classifier.equals("nb")) {
-                naiveBayes(cf, ngram);
+            naiveBayes(cf, ngram);
         }else if(classifier.equals("svm")) {
-                svm_test(cf, ngram, rp, dim);
+            svm_test(cf, ngram, rp, dim);
         }else{
-                System.out.println("USAGE: java -Xmx3g -jar SpamClassifier.jar <arg1> <arg2> <arg3> <arg4> <arg5>");
-                System.out.println("<arg1> - svm or nb - choose svm or naive bayes as classifier");
-                System.out.println("<arg2> - true or false - true if character feature required");
-                System.out.println("<arg3> - 1 0r 2 or...n - n gram for character feature - have to use -1 or any integer if <arg2> is false");
-                System.out.println("<arg4> - true or false - true if dimensionality reduction wanted using random projection - ignored with naive bayes classifier");
-                System.out.println("<arg5> - positive integer greater than zero - reduced dimensionality size - have to use -1 or any integer if <arg4> is false");
-                System.out.println("Example - java -Xmx3g -jar SpamClassifier.jar svm false 2 true 1000");
+            System.out.println("USAGE: java -Xmx3g -jar SpamClassifier.jar <arg1> <arg2> <arg3> <arg4> <arg5>");
+            System.out.println("<arg1> - svm or nb - choose svm or naive bayes as classifier");
+            System.out.println("<arg2> - true or false - true if character feature required");
+            System.out.println("<arg3> - 1 0r 2 or...n - n gram for character feature - have to use -1 or any integer if <arg2> is false");
+            System.out.println("<arg4> - true or false - true if dimensionality reduction wanted using random projection - ignored with naive bayes classifier");
+            System.out.println("<arg5> - positive integer greater than zero - reduced dimensionality size - have to use -1 or any integer if <arg4> is false");
+            System.out.println("Example - java -Xmx3g -jar SpamClassifier.jar svm false 2 true 1000");
         }
-	}
+    }
 	
 	public static void svm_test(boolean cf, int ngram, boolean rp, int dimSize){
 		SVMTest svm = new SVMTest();
@@ -244,11 +248,8 @@ public class Test {
 	public static void naiveBayesClassifier(boolean cf, int ngram) {
         String emailPath = null;
             int[] count = new int[2];
-            nbayes = new NaiveBayes();
-            if (cf == true) {
-                nbayes.cf = true;
-                nbayes.ngram = ngram;
-            }
+            nbayes = new NaiveBayes(cf, ngram);
+
             for (String line : trainSet) {
                 // emailPath =
                 // "..../Project/Datasets/TREC/trec07p/full/../data/inmail.1";
@@ -303,15 +304,13 @@ public class Test {
                         accuracyHam[i]++;
                     else {
                         //System.out.println("Incorrectly classified as Spam " + line + " having p = " + p);
-
                         System.out.println("Incorrectly classified as Spam - " + line + " for "
                                 +(interestingTokens[i]==Integer.MAX_VALUE ? "all tokens ":interestingTokens[i]+" interesting tokens"));
-                            int j=0;
-                            for(Iterator<Map.Entry<String, Double>> it = interestingWords.iterator() ; it.hasNext() && j< 15; j++){
-                                Map.Entry<String, Double> entry = it.next();
-                                //System.out.println(entry.getKey()+" "+entry.getValue());
-                            }
-
+                        int j=0;
+                        for(Iterator<Map.Entry<String, Double>> it = interestingWords.iterator() ; it.hasNext() && j< 15; j++){
+                            Map.Entry<String, Double> entry = it.next();
+                            //System.out.println(entry.getKey()+" "+entry.getValue());
+                        }
                     }
                 }
             }
