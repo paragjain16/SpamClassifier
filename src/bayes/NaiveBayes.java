@@ -10,6 +10,10 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import test.StopWords;
 
+/**
+ * Created by Parag on 25-11-2014.
+ */
+
 public class NaiveBayes {
     public HashMap<String, Integer> spamMap;
     public HashMap<String, Integer> hamMap;
@@ -18,7 +22,7 @@ public class NaiveBayes {
     private double numberOfHam;
     private StopWords stopWords;
     //private final String regex = "\\W+";
-	private final String regex = "[^a-zA-Z0-9$'-_!%*.,<>]";
+	private final String regex = "[^a-zA-Z0-9$'-_!%*.<>]";
     //private final String regex = "\\s+";
     public boolean cf = false;
     public int ngram = 4;
@@ -79,6 +83,7 @@ public class NaiveBayes {
             while ((line = br.readLine()) != null) {
                 if(end)
                     break;
+                //There will be attachments after this in the mail, ignore them
                 if(line.startsWith("Content-Disposition"))
                     end = true;
                 if(filterLine(line))
@@ -231,8 +236,8 @@ public class NaiveBayes {
         numberOfHamWords = Math.max(numberOfHamWords, 1);
         //spamProb = numberOfSpam / (numberOfSpam+numberOfHam);
         //hamProb = numberOfHam / (numberOfSpam+numberOfHam);
-        System.out.println("Spam Prob " + spamProb);
-        System.out.println("Ham Prob "+hamProb);
+        //System.out.println("Spam Prior " + spamProb);
+        //System.out.println("Ham Prior "+hamProb);
         spamPrior = spamProb;
 
         for (Map.Entry<String, Integer> entry : spamMap.entrySet()) {
@@ -396,64 +401,6 @@ public class NaiveBayes {
 
     }
 
-    public double nbProb(List<String> email){
-        double wordSpam = numberOfSpam/(numberOfHam+numberOfSpam);//0.8;
-        double wordHam = numberOfSpam/(numberOfHam+numberOfSpam);//0.2;
-        double result = 0.0;
-        for (String line : email) {
-
-            if(noHTML) {
-                Document doc = Jsoup.parse(line);
-                line = doc.text();
-            }
-            if (cf) {
-                line = removeStopWords(line);
-                String prefix = getPrefix(line);
-                if(noPrefix)
-                    prefix = "";
-                if (line.length() < ngram) {
-                    if (line.isEmpty())
-                        continue;
-                    line = prefix + line;
-                    if (spamMap.containsKey(line))
-                        wordSpam = spamMap.get(line)/numberOfSpamWords;
-                    if (hamMap.containsKey(line))
-                        wordHam = hamMap.get(line)/numberOfHamWords;
-                    result += Math.log(wordSpam) - Math.log(wordHam);
-                } else {
-                    for (int i = 0; i <= line.length() - ngram; i++) {
-                        String s = line.substring(i, i+ngram);
-                        if (s.isEmpty())
-                            continue;
-                        s = prefix+s;
-                        if (spamMap.containsKey(s))
-                            wordSpam = spamMap.get(s)/numberOfSpamWords;
-                        if (hamMap.containsKey(s))
-                            wordHam = hamMap.get(s)/numberOfHamWords;
-                        result += Math.log(wordSpam) - Math.log(wordHam);
-                    }
-                }
-            }else {
-                String[] arr = line.split(regex);
-                String prefix = getPrefix(line);
-                if(noPrefix)
-                    prefix = "";
-                for (String word : arr) {
-                    if (stopWords.isStopWord(word))
-                        continue;
-                    word = prefix + word;
-                    if (spamMap.containsKey(word))
-                        wordSpam = spamMap.get(word)/numberOfSpamWords;
-                    if (hamMap.containsKey(word))
-                        wordHam = hamMap.get(word)/numberOfHamWords;
-                    result += Math.log(wordSpam) - Math.log(wordHam);
-                }
-            }
-        }
-        result += Math.log(numberOfSpam/(numberOfSpam+numberOfHam))-Math.log(numberOfHam/(numberOfSpam+numberOfHam));
-        return result;
-    }
-
     public String getPrefix(String emailLine){
         String prefix = "";
         if(emailLine.startsWith("From"))
@@ -472,8 +419,8 @@ public class NaiveBayes {
 
     public boolean filterLine(String line){
         //if(isEmailHeader(line)) return true;
-        /*if(line.startsWith("X-"))
-            return true;*/
+        if(line.startsWith("X-"))
+            return true;
        /* if(line.length() >30 && line.matches("[^ ]*"))
             return true;*/
         /*if(line.startsWith("Received"))

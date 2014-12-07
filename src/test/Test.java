@@ -7,6 +7,10 @@ import bayes.NaiveBayes;
 import reader.DataReader;
 import svm.SVMTest;
 
+/**
+ * Created by Parag on 24-11-2014.
+ */
+
 public class Test {
     private static NaiveBayes nbayes;
     private static List<String> testSet;
@@ -42,12 +46,12 @@ public class Test {
         /**
          * 80% for train. 20% for test
          */
-        //Collections.shuffle(spamHams);
         spamHams = DataReader.readFile(spamHamFile);
+        //Collections.reverse(spamHams);
         trainSet = new ArrayList<String>((int)(0.8*(spamCount+hamCount)));
         testSet = new ArrayList<String>((int)(0.2*(spamCount+hamCount)));
         if(classifier.equals("nb")) {
-                indexFileRead_TREC(cf, ngram);
+                naiveBayes(cf, ngram);
         }else if(classifier.equals("svm")) {
                 svm_test(cf, ngram, rp, dim);
         }else{
@@ -104,7 +108,6 @@ public class Test {
                 int i = 0;
                 while (i < spamHams.size() && (spamCount > 0 || hamCount > 0)) {
                     String email = spamHams.get(i);
-
                     if (email.startsWith("spam") && spamCount > 0) {
                         spamCollection.add(email);
                         spamCount--;
@@ -146,19 +149,18 @@ public class Test {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-        System.out.println("Spam Accuracy = "+(double)svm.spam/svm.totalSpam*100+
-                "% ("+svm.spam+"/"+svm.totalSpam+") (classification)\n");
+        System.out.println("\nSpam Accuracy = "+(double)svm.spam/svm.totalSpam*100+
+                "% ("+svm.spam+"/"+svm.totalSpam+") (classification)");
         System.out.println("Ham Accuracy = "+(double)svm.ham/svm.totalHam*100+
                 "% ("+svm.ham+"/"+svm.totalHam+") (classification)\n");
 	}
 
-    public static void indexFileRead_TREC(boolean cf, int ngram){
+    public static void naiveBayes(boolean cf, int ngram){
         if(!crossValidation) {
             int testSpam = (int)(0.2*spamCount);
             int testHam = (int)(0.2*hamCount) ;
             spamCount -=testSpam;
             hamCount -= testHam;
-
             int i = 0;
             while (i < spamHams.size() && (spamCount > 0 || hamCount > 0 || testSpam > 0 || testHam > 0)) {
                 String email = spamHams.get(i);
@@ -228,10 +230,10 @@ public class Test {
         }
         for (int i = 0; i < interestingTokens.length; i++) {
             System.out.println();
-            System.out.println("[SPAM]" + interestingTokens[i] + "-"
+            System.out.println("[SPAM]" + (interestingTokens[i]==Integer.MAX_VALUE ? "All":interestingTokens[i]) + "-"
                     + accuracySpam[i] + "/" + totalSpam[i] + " = "
                     + (double) accuracySpam[i] / (double) totalSpam[i]);
-            System.out.println("[HAM]" + interestingTokens[i] + "-"
+            System.out.println("[HAM]" + (interestingTokens[i]==Integer.MAX_VALUE ? "All":interestingTokens[i]) + "-"
                     + accuracyHam[i] + "/" + totalHam[i] + " = "
                     + (double) accuracyHam[i] / (double) totalHam[i]);
         }
@@ -278,22 +280,36 @@ public class Test {
             for (int i = 0; i < interestingTokens.length; i++) {
                 double p = nbayes.calcSpamProbability(interestingWords, interestingTokens[i]);
                 //System.out.println(p);
+
                 if (line.startsWith("spam")) {
                     totalSpam[i]++;
-                    if (p >= 0.9)
+                    if (p >= 0.9) {
                         accuracySpam[i]++;
+
+                    }else{
+                        /*if(line.contains("inmail.1")) {
+                            System.out.println(line + " " + p);
+                            System.out.println("\nmail " + line + " " + interestingTokens[i]);
+                            for (Iterator<Map.Entry<String, Double>> it = interestingWords.iterator(); it.hasNext(); ) {
+                                Map.Entry<String, Double> entry = it.next();
+                                System.out.println(entry.getKey() + " " + entry.getValue());
+                            }
+                            System.out.println("End of mail\n");
+                        }*/
+                    }
                 } else {
                     totalHam[i]++;
                     if (p < 0.9)
                         accuracyHam[i]++;
                     else {
-                        System.out.println("Incorrectly classified as Spam " + line + " having p = " + p);
-                            //System.out.println(interestingTokens[i]+" Interesting words ");
-                            int j=0;
-                            for(Iterator<Map.Entry<String, Double>> it = interestingWords.iterator() ; it.hasNext() && j< 10; j++){
-                                Map.Entry<String, Double> entry = it.next();
-                                System.out.println(entry.getKey()+" "+entry.getValue());
+                        //System.out.println("Incorrectly classified as Spam " + line + " having p = " + p);
 
+                        System.out.println("Incorrectly classified as Spam - " + line + " for "
+                                +(interestingTokens[i]==Integer.MAX_VALUE ? "all tokens ":interestingTokens[i]+" interesting tokens"));
+                            int j=0;
+                            for(Iterator<Map.Entry<String, Double>> it = interestingWords.iterator() ; it.hasNext() && j< 15; j++){
+                                Map.Entry<String, Double> entry = it.next();
+                                //System.out.println(entry.getKey()+" "+entry.getValue());
                             }
 
                     }

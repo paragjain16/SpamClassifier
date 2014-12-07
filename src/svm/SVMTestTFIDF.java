@@ -10,6 +10,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * Created by Parag on 28-11-2014.
+ */
+
 public class SVMTestTFIDF {
 
 	private List<File> files;

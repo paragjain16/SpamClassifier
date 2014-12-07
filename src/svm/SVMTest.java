@@ -13,6 +13,10 @@ import libsvm.svm_parameter;
 import libsvm.svm_problem;
 import randomprojection.RandomProjection;
 
+/**
+ * Created by Parag on 28-11-2014.
+ */
+
 public class SVMTest {
 	private String regex = "\\s+";
 	private Map<String, Integer> wordMap;

@@ -1,8 +1,6 @@
 package test;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.HashSet;
 
 public class StopWords {
@@ -15,7 +13,11 @@ public class StopWords {
         stopwords = new HashSet<String>();
         BufferedReader br;
         try {
-            br = new BufferedReader(new FileReader("C:\\Users\\Parag\\Desktop\\Project\\stopwords.txt"));
+            InputStream is = stopwords.getClass().getResourceAsStream("stopwords.txt");
+            if(is == null)
+                br = new BufferedReader(new FileReader("stopwords.txt"));
+            else
+                br = new BufferedReader(new InputStreamReader(is));
             String line;
             while ((line = br.readLine()) != null) {
                 stopwords.add(line);
