@@ -19,8 +19,8 @@ public class SVMTest {
     private boolean rp = false;
     private int reducedDimensionSize=10;
     private RandomProjection randomProjection;
-    private boolean cf = false;
-    private int ngram = 4;
+    public boolean cf = false;
+    public int ngram = 4;
     private ArrayList<Integer> randomNodes;
     private int numDataPoints = 30;
     private static String path = "C:/Users/Parag/Desktop/Project/trec07p";
