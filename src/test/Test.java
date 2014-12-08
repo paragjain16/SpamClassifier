@@ -6,6 +6,7 @@ import java.util.*;
 import bayes.NaiveBayes;
 import reader.DataReader;
 import svm.SVMTest;
+import svm.SVMTestTFIDF;
 
 /**
  * Created by Parag on 24-11-2014.
@@ -24,6 +25,7 @@ public class Test {
     static int[] accuracySpam = new int[interestingTokens.length];
     static int[] totalHam = new int[interestingTokens.length];
     static int[] totalSpam = new int[interestingTokens.length];
+    static long numFeatures;
     private static String path = "C:/Users/Parag/Desktop/Project/trec07p";
     private static String datapath = path + "/data/";
     private static String spamHamFile = path + "/full/index";
@@ -47,11 +49,16 @@ public class Test {
 	}
 
     public static void runProgram(String classifier, boolean cf, int ngram, boolean rp, int dim){
+        accuracyHam = new int[interestingTokens.length];
+        accuracySpam = new int[interestingTokens.length];
+        totalHam = new int[interestingTokens.length];
+        totalSpam = new int[interestingTokens.length];
+        numFeatures=0;
         /**
          * 80% for train. 20% for test
          */
         spamHams = DataReader.readFile(spamHamFile);
-        //Collections.reverse(spamHams);
+        //Collections.shuffle(spamHams);
         trainSet = new ArrayList<String>((int)(0.8*(spamCount+hamCount)));
         testSet = new ArrayList<String>((int)(0.2*(spamCount+hamCount)));
         if(classifier.equals("nb")) {
@@ -105,6 +112,7 @@ public class Test {
                     i++;
                 }
                 svm.svmTrain(trainSet);
+                numFeatures = svm.numFeatures;
                 svm.svmPredict(testSet);
             }else {
                 ArrayList<String> spamCollection = new ArrayList<String>(spamCount);
@@ -145,18 +153,22 @@ public class Test {
                     }
                     svm.svmTrain(trainSet);
                     svm.svmPredict(testSet);
+                    numFeatures += svm.numFeatures;
                     testSet.clear();
                     trainSet.clear();
                 }
+                numFeatures = numFeatures /5;
             }
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+        System.out.println("Number of features "+numFeatures);
         System.out.println("\nSpam Accuracy = "+(double)svm.spam/svm.totalSpam*100+
                 "% ("+svm.spam+"/"+svm.totalSpam+") (classification)");
         System.out.println("Ham Accuracy = "+(double)svm.ham/svm.totalHam*100+
                 "% ("+svm.ham+"/"+svm.totalHam+") (classification)\n");
+
 	}
 
     public static void naiveBayes(boolean cf, int ngram){
@@ -231,6 +243,7 @@ public class Test {
                 testSet.clear();
                 trainSet.clear();
             }
+            numFeatures/=5;
         }
         for (int i = 0; i < interestingTokens.length; i++) {
             System.out.println();
@@ -286,14 +299,23 @@ public class Test {
                     totalSpam[i]++;
                     if (p >= 0.9) {
                         accuracySpam[i]++;
-
-                    }else{
-                        /*if(line.contains("inmail.1")) {
+                        /*if(line.contains("inmail.3") && interestingTokens[i] == 30) {
                             System.out.println(line + " " + p);
-                            System.out.println("\nmail " + line + " " + interestingTokens[i]);
+                            System.out.println("\nCorrect mail " + line + " " + interestingTokens[i]);
                             for (Iterator<Map.Entry<String, Double>> it = interestingWords.iterator(); it.hasNext(); ) {
                                 Map.Entry<String, Double> entry = it.next();
-                                System.out.println(entry.getKey() + " " + entry.getValue());
+                                System.out.println(entry.getKey() + " " + entry.getValue()+" "+nbayes.spamicityMap.get(entry.getKey()));
+                            }
+                            System.out.println("End of mail\n");
+                        }*/
+
+                    }else{
+                      /* if( interestingTokens[i] == 30) {
+                            System.out.println(line + " " + p);
+                            System.out.println("\n Incorrect mail " + line + " " + interestingTokens[i]);
+                            for (Iterator<Map.Entry<String, Double>> it = interestingWords.iterator(); it.hasNext(); ) {
+                                Map.Entry<String, Double> entry = it.next();
+                                System.out.println(entry.getKey() + " " + entry.getValue()+" "+nbayes.spamicityMap.get(entry.getKey()));
                             }
                             System.out.println("End of mail\n");
                         }*/
@@ -306,16 +328,21 @@ public class Test {
                         //System.out.println("Incorrectly classified as Spam " + line + " having p = " + p);
                         System.out.println("Incorrectly classified as Spam - " + line + " for "
                                 +(interestingTokens[i]==Integer.MAX_VALUE ? "all tokens ":interestingTokens[i]+" interesting tokens"));
-                        int j=0;
-                        for(Iterator<Map.Entry<String, Double>> it = interestingWords.iterator() ; it.hasNext() && j< 15; j++){
-                            Map.Entry<String, Double> entry = it.next();
-                            //System.out.println(entry.getKey()+" "+entry.getValue());
-                        }
+
+                          /*  System.out.println(line + " " + p);
+                            System.out.println("\n Incorrect fp " + line + " " + interestingTokens[i]);
+                            for (Iterator<Map.Entry<String, Double>> it = interestingWords.iterator(); it.hasNext(); ) {
+                                Map.Entry<String, Double> entry = it.next();
+                                System.out.println(entry.getKey() + " " + entry.getValue()+" "+nbayes.spamicityMap.get(entry.getKey()));
+                            }
+                            System.out.println("End of mail\n");*/
+
                     }
                 }
             }
             interestingWords.clear();
         }
+        numFeatures += nbayes.numFeatures;
 	}
 	/**
 	 * Only TEXT. No HTML. Feature = Words (text separated by any non-word

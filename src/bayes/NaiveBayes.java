@@ -17,7 +17,7 @@ import test.StopWords;
 public class NaiveBayes {
     public HashMap<String, Integer> spamMap;
     public HashMap<String, Integer> hamMap;
-    private HashMap<String, Double> spamicityMap;
+    public HashMap<String, Double> spamicityMap;
     private double numberOfSpam;
     private double numberOfHam;
     private StopWords stopWords;
@@ -37,9 +37,10 @@ public class NaiveBayes {
     private double numberOfHamWords = 0;
     private double spamProb = 0.5;
     private double hamProb = 0.5;
-    double multiply = 2.0;
+    double multiply = 1.0;
     int wrdcounts = 0;
     int wrdcounth = 0;
+    public long numFeatures =0;
 
 
     // Word that doesn't occur in the hash table of word probabilities.
@@ -63,14 +64,15 @@ public class NaiveBayes {
     }
 
     public String removeStopWords(String line){
-        String[] arr = line.split("\\s+");
+        /*String[] arr = line.split("\\s+");
         StringBuilder sb = new StringBuilder();
         for(String s: arr){
             if(stopWords.isStopWord(s))
                 continue;
             sb.append(s).append(" ");
         }
-        return sb.toString();
+        return sb.toString();*/
+        return line;
     }
 
     /**
@@ -223,8 +225,7 @@ public class NaiveBayes {
     public void countHam(String word) {
         numberOfHamWords++;
         int add = 1;
-        if(multiply == 2.0) {
-            add = 2;
+        if(add == 2) {
             numberOfHamWords++;
         }
         if (hamMap.containsKey(word)) {
@@ -291,6 +292,7 @@ public class NaiveBayes {
             this.spamMap = null;
             this.hamMap = null;
         }
+        numFeatures = spamicityMap.size();
         System.out.println("Number of features = "+spamicityMap.size());
     }
 
@@ -418,16 +420,13 @@ public class NaiveBayes {
             return "To*";
         else if(emailLine.startsWith("X-"))
             return "X*";
-
         return prefix;
     }
 
     public boolean filterLine(String line){
         //if(isEmailHeader(line)) return true;
-        /*if(!cf) {
-            if (line.startsWith("X-"))
-                return true;
-        }*/
+            /*if (line.startsWith("X-"))
+                return true;*/
         //Remove attachment data which is chunk of repeating alphanumeric/special characters
         if (line.length() > 30 && line.matches("[^ ]*"))
             return true;
@@ -438,7 +437,7 @@ public class NaiveBayes {
         return false;
     }
     public boolean filterWord(String word){
-       /* if(stopWords.isStopWord(word))
+       /*if(stopWords.isStopWord(word))
             return true;
         if(word.matches("[0-9 ]*"))
             return true;

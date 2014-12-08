@@ -15,8 +15,6 @@ import java.util.*;
  */
 
 public class SVMTestTFIDF {
-
-	private List<File> files;
 	private String regex = "\\s+";
     private Map<String, Integer> wordMap;
 	private ArrayList<Map<Integer, Double>> tfMaps;
@@ -24,21 +22,26 @@ public class SVMTestTFIDF {
     private Map<Integer, Double> idfSpam;
     private Map<Integer, Double> idfHam;
     private Map<String, Double> tf;
-    private int totalSpam=0;
-    private int totalHam=0;
+    private int tSpam=0;
+    private int tHam=0;
     private boolean rp = false;
     private int reducedDimensionSize=10;
     private RandomProjection randomProjection;
-    private boolean cf = false;
-    private int ngram = 4;
+    public boolean cf = false;
+    public int ngram = 4;
     private ArrayList<svm_node[]> randomNodes;
     private int numDataPoints = 30;
     private static String path = "C:/Users/Parag/Desktop/Project/trec07p";
     private static String datapath = path + "/data/";
+    public int numFeatures = 0;
+    public double totalHam =0;
+    public double totalSpam=0;
+    public double ham=0;
+    public double spam=0;
 
 	public SVMTestTFIDF(){
 		//wordMap = new HashMap<String, Integer>();
-		files = new ArrayList<File>();
+
         tfMaps = new ArrayList<Map<Integer, Double>>();
         randomNodes = new ArrayList<svm_node[]>(numDataPoints);
 	}
@@ -104,9 +107,9 @@ public class SVMTestTFIDF {
             HashSet<Integer> wordSpamIndex = new HashSet<Integer>();
             HashSet<Integer> wordHamIndex = new HashSet<Integer>();
             if(file.startsWith("spam")){
-                totalSpam++;
+                tSpam++;
             }else{
-                totalHam++;
+                tHam++;
             }
             int totalWords=0;
             double maxCount = 0.0;
@@ -165,13 +168,14 @@ public class SVMTestTFIDF {
         }
         //Calculate IDF - IDF
         for (Map.Entry<Integer, Double> entry : idfSpam.entrySet()) {
-            double idf = Math.log(totalSpam/(1.0+entry.getValue()));
+            double idf = Math.log(tSpam/(1.0+entry.getValue()));
             entry.setValue(idf);
         }
         for (Map.Entry<Integer, Double> entry : idfHam.entrySet()) {
-            double idf = Math.log(totalHam/(1.0+entry.getValue()));
+            double idf = Math.log(tHam/(1.0+entry.getValue()));
             entry.setValue(idf);
         }
+        numFeatures = index;
 	}
 
     protected void genCharMap(List<String> train) throws IOException{
@@ -194,9 +198,9 @@ public class SVMTestTFIDF {
             HashSet<Integer> wordSpamIndex = new HashSet<Integer>();
             HashSet<Integer> wordHamIndex = new HashSet<Integer>();
             if(file.startsWith("spam")){
-                totalSpam++;
+                tSpam++;
             }else{
-                totalHam++;
+                tHam++;
             }
             int totalWords=0;
             double maxCount = 0.0;
@@ -281,13 +285,14 @@ public class SVMTestTFIDF {
         }
         //Calculate IDF - IDF
         for (Map.Entry<Integer, Double> entry : idfSpam.entrySet()) {
-            double idf = Math.log(totalSpam/(1.0+entry.getValue()));
+            double idf = Math.log(tSpam/(1.0+entry.getValue()));
             entry.setValue(idf);
         }
         for (Map.Entry<Integer, Double> entry : idfHam.entrySet()) {
-            double idf = Math.log(totalHam/(1.0+entry.getValue()));
+            double idf = Math.log(tHam/(1.0+entry.getValue()));
             entry.setValue(idf);
         }
+        numFeatures = index;
 
     }
 	protected svm_problem genProblem(List<String> train, boolean cf) throws IOException{
@@ -297,9 +302,9 @@ public class SVMTestTFIDF {
 		System.out.println("[SVM TRAIN START]");
 		
 		svm_problem prob = new svm_problem();
-		prob.x = new svm_node[files.size()][];
+		prob.x = new svm_node[train.size()][];
 		
-        prob.y = new double[files.size()];
+        prob.y = new double[train.size()];
 
         String emailPath = null;
         for(int fileId = 0;fileId<train.size();fileId++){
@@ -367,7 +372,7 @@ public class SVMTestTFIDF {
             System.out.println("Pairwise distances after random projection ");
             calculateDistance(randomNodes);
         }
-        prob.l = files.size();
+        prob.l = train.size();
         System.out.println("[SVM TRAIN END]");
 		return prob;
 	}
@@ -535,26 +540,24 @@ public class SVMTestTFIDF {
 		int correct = 0;
 		int total = actualLabels.length;
 		double error = 0;
-        int totalspam = 0;
-        int totalham = 0;
-		int spam =0;
-        int ham =0;
+
 
         for(int i=0;i<predictedLables.length;i++){
             if(actualLabels[i] == -1.0){
-                totalspam++;
+                totalSpam++;
                 if(predictedLables[i] == -1.0)
                     spam++;
             }else{
-                totalham++;
+                totalHam++;
                 if(predictedLables[i] == 1.0)
                     ham++;
         	}
         }
 
-        System.out.println("Spam Accuracy = "+(double)spam/totalspam*100+
-				 "% ("+spam+"/"+totalspam+") (classification)\n");
-            System.out.println("Ham Accuracy = "+(double)ham/totalham*100+
-                    "% ("+ham+"/"+totalham+") (classification)\n");
+        System.out.println("Spam Accuracy = "+(double)spam/totalSpam*100+
+				 "% ("+spam+"/"+totalSpam+") (classification)\n");
+            System.out.println("Ham Accuracy = "+(double)ham/totalHam*100+
+                    "% ("+ham+"/"+totalHam+") (classification)\n");
 	}
+
 }

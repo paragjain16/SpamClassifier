@@ -15,7 +15,7 @@ public class GenerateResults {
         String fileName = "";
         File f = null;
         PrintWriter pw = null;
-        int[] trainSize = {4000, 2000};
+        int[] trainSize = {2000, 4000};
         String[] classifier = {"nb" ,"svm"};
         boolean[] cf = {false, true};
         int[] ngram = {0, 3, 4, 5, 6};
@@ -27,11 +27,12 @@ public class GenerateResults {
                     for (int j = 0; j < cf.length; j++) {
                         if (cf[j]) {
                             for (int k = 1; k < ngram.length; k++) {
-                                fileName += trainSize[m] + classifier[i] + cf[j] + ngram[k] + rp[0] + dim[0];
+                                fileName = trainSize[m] + classifier[i] + rp[0] + dim[0];
                                 Test.spamCount = trainSize[m] / 2;
                                 Test.hamCount = trainSize[m] / 2;
                                 Test.runProgram(classifier[i], cf[j], ngram[k], rp[0], dim[0]);
                                 int[] tokens = Test.interestingTokens;
+                                long numfeatures = Test.numFeatures;
                                 double[] spamvalues = new double[tokens.length];
                                 double[] hamvalues = new double[tokens.length];
 
@@ -43,38 +44,45 @@ public class GenerateResults {
                                     hamvalues[t] = (double) Test.accuracyHam[t] / (double) Test.totalHam[t] * 100;
                                 }
 
-                                if(map.containsKey(trainSize[m] + classifier[i] + ngram[0] + rp[0] + dim[0]+"Spam")) {
-                                    results r = map.get(trainSize[m] + classifier[i] + ngram[0] + rp[0] + dim[0]+"Spam");
+                                if(map.containsKey(trainSize[m] + classifier[i] + rp[0] + dim[0]+"Spam")) {
+                                    results r = map.get(trainSize[m] + classifier[i] + rp[0] + dim[0]+"Spam");
                                     r.values[r.row] = spamvalues;
-                                    r.cols[r.row] = ngram[0]+" gram";
+                                    r.cols[r.row] = ngram[k]+" gram";
+                                    r.features[r.row] = numfeatures;
                                     r.row++;
-                                    r = map.get(trainSize[m] + classifier[i] + ngram[0] + rp[0] + dim[0]+"Ham");
-                                    r.values[r.row] = spamvalues;
-                                    r.cols[r.row] = ngram[0]+" gram";
+                                    r = map.get(trainSize[m] + classifier[i] + rp[0] + dim[0]+"Ham");
+                                    r.values[r.row] = hamvalues;
+                                    r.features[r.row] = numfeatures;
+                                    r.cols[r.row] = ngram[k]+" gram";
                                     r.row++;
                                 }
                                 else{
                                     results[] rs = new results[2];
                                     double[][] values = new double[ngram.length][];
                                     values[0] = spamvalues;
-                                    rs[0] = new results(new String[ngram.length], tokens, values, fileName+"Spam"+".csv");
-                                    rs[0].cols[0] = "Spam";
+                                    long[] features = new long[ngram.length];
+                                    features[0] = numfeatures;
+                                    rs[0] = new results(new String[ngram.length], tokens, values, fileName+"Spam"+".csv", features);
+                                    rs[0].cols[0] = "BOW";
                                     rs[0].row++;
-                                    map.put(trainSize[m] + classifier[i] + ngram[0] + rp[0] + dim[0]+"Spam", rs[0]);
+                                    map.put(trainSize[m] + classifier[i] + rp[0] + dim[0]+"Spam", rs[0]);
                                     double[][] values1 = new double[ngram.length][];
                                     values1[0] = hamvalues;
-                                    rs[1] = new results(new String[ngram.length], tokens, values,fileName+"Ham"+".csv");
-                                    rs[1].cols[0] = "Ham";
+                                    long[] features1 = new long[ngram.length];
+                                    features1[0] = numfeatures;
+                                    rs[1] = new results(new String[ngram.length], tokens, values1,fileName+"Ham"+".csv", features1);
+                                    rs[1].cols[0] = "BOW";
                                     rs[1].row++;
-                                    map.put(trainSize[m] + classifier[i] + ngram[0] + rp[0] + dim[0]+"Ham", rs[0]);
+                                    map.put(trainSize[m] + classifier[i] + rp[0] + dim[0]+"Ham", rs[1]);
                                 }
                             }
                         } else {
-                            fileName += trainSize[m] + classifier[i] + cf[j] + ngram[0] + rp[0] + dim[0];
+                            fileName = trainSize[m] + classifier[i] + rp[0] + dim[0];
                             Test.spamCount = trainSize[m] / 2;
                             Test.hamCount = trainSize[m] / 2;
                             Test.runProgram(classifier[i], cf[j], ngram[0], rp[0], dim[0]);
                             int[] tokens = Test.interestingTokens;
+                            long numfeatures = Test.numFeatures;
                             double[] spamvalues = new double[tokens.length];
                             double[] hamvalues = new double[tokens.length];
 
@@ -86,30 +94,36 @@ public class GenerateResults {
                                hamvalues[t] = (double) Test.accuracyHam[t] / (double) Test.totalHam[t] * 100;
                             }
 
-                            if(map.containsKey(trainSize[m] + classifier[i] + ngram[0] + rp[0] + dim[0]+"Spam")) {
-                                results r = map.get(trainSize[m] + classifier[i] + ngram[0] + rp[0] + dim[0]+"Spam");
+                            if(map.containsKey(trainSize[m] + classifier[i] + rp[0] + dim[0]+"Spam")) {
+                                results r = map.get(trainSize[m] + classifier[i] + rp[0] + dim[0]+"Spam");
                                 r.values[r.row] = spamvalues;
                                 r.cols[r.row] = ngram[0]+" gram";
+                                r.features[r.row] = numfeatures;
                                 r.row++;
-                                r = map.get(trainSize[m] + classifier[i] + ngram[0] + rp[0] + dim[0]+"Ham");
-                                r.values[r.row] = spamvalues;
+                                r = map.get(trainSize[m] + classifier[i] + rp[0] + dim[0]+"Ham");
+                                r.values[r.row] = hamvalues;
                                 r.cols[r.row] = ngram[0]+" gram";
+                                r.features[r.row] = numfeatures;
                                 r.row++;
                             }
                             else{
                                 results[] rs = new results[2];
+                                long[] features = new long[ngram.length];
+                                features[0] = numfeatures;
                                 double[][] values = new double[ngram.length][];
                                 values[0] = spamvalues;
-                                rs[0] = new results(new String[ngram.length], tokens, values, fileName+"Spam"+".csv");
-                                rs[0].cols[0] = "Spam";
+                                rs[0] = new results(new String[ngram.length], tokens, values, fileName+"Spam"+".csv", features);
+                                rs[0].cols[0] = "BOW";
                                 rs[0].row++;
-                                map.put(trainSize[m] + classifier[i] + ngram[0] + rp[0] + dim[0]+"Spam", rs[0]);
+                                map.put(trainSize[m] + classifier[i] + rp[0] + dim[0]+"Spam", rs[0]);
+                                long[] features1 = new long[ngram.length];
+                                features1[0] = numfeatures;
                                 double[][] values1 = new double[ngram.length][];
                                 values1[0] = hamvalues;
-                                rs[1] = new results(new String[ngram.length], tokens, values,fileName+"Ham"+".csv");
-                                rs[1].cols[0] = "Ham";
+                                rs[1] = new results(new String[ngram.length], tokens, values1,fileName+"Ham"+".csv", features1);
+                                rs[1].cols[0] = "BOW";
                                 rs[1].row++;
-                                map.put(trainSize[m] + classifier[i] + ngram[0] + rp[0] + dim[0]+"Ham", rs[0]);
+                                map.put(trainSize[m] + classifier[i] + rp[0] + dim[0]+"Ham", rs[1]);
                             }
                         }
 
@@ -127,23 +141,33 @@ public class GenerateResults {
     static class results{
         String[] cols;
         int[] tokens;
-        double [][] values;
+        double[][] values;
         int row=0;
         String fileName;
-        results(String[] cols, int[] tokens, double [][] values,String fileName){
+        long[] features;
+        results(String[] cols, int[] tokens, double[][] values,String fileName, long[] features){
             this.cols = cols;
             this.tokens = tokens;
             this.values = values;
             this.fileName = fileName;
+            this.features = features;
         }
 
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
+            sb.append(" ").append(",");
+            for(int i=0; i<tokens.length; i++){
+                sb.append((tokens[i] == Integer.MAX_VALUE? "All":tokens[i])).append(",");
+            }
+            sb.append("\n");
             for(int i=0; i<cols.length; i++){
                 sb.append(cols[i]).append(",");
+
                 for(int j=0; j<values[i].length; j++)
                     sb.append(values[i][j]).append(",");
+                sb.append(features[i]);
+                sb.append("\n");
             }
             return sb.toString();
         }

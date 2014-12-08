@@ -18,7 +18,8 @@ import randomprojection.RandomProjection;
  */
 
 public class SVMTest {
-	private String regex = "\\s+";
+	//private String regex = "[^a-zA-Z0-9$'-_!%*.<>]";
+    private String regex = "//s+";
 	private Map<String, Integer> wordMap;
     private boolean rp = false;
     private int reducedDimensionSize=10;
@@ -26,16 +27,19 @@ public class SVMTest {
     public boolean cf = false;
     public int ngram = 4;
     private ArrayList<Integer> randomNodes;
-    private int numDataPoints = 30;
+    private int numDataPoints = 20;
     private static String path = "C:/Users/Parag/Desktop/Project/trec07p";
     private static String datapath = path + "/data/";
     public double totalHam =0;
     public double totalSpam=0;
     public double ham=0;
     public double spam=0;
+    public int numFeatures = 0;
+    public double nu =0.1;
 
 	public SVMTest(){
         randomNodes = new ArrayList<Integer>(numDataPoints);
+
 	}
 
 	public void setRP(boolean rp){
@@ -45,6 +49,10 @@ public class SVMTest {
         this.reducedDimensionSize = size;
     }
 	public void svmTrain(List<String> train){
+        if(cf)
+            System.out.println("Using "+ngram+" gram character features");
+        else
+            System.out.println("Using bag of words features with delimiter "+regex);
 		svm_problem prob = new svm_problem();
 		try{
             if(cf)
@@ -60,16 +68,17 @@ public class SVMTest {
 		 */
 		svm_parameter param = new svm_parameter();
 		param.svm_type = svm_parameter.NU_SVC;
-		param.kernel_type = svm_parameter.RBF;
+		param.kernel_type = svm_parameter.LINEAR;
 
-        param.degree = 1;
+        param.degree= 1;
 		param.nu = 0.1;
 		param.gamma = 0.0001;
 		param.eps = 0.001;
 		param.C = 3.0;
-		
+		System.out.println("Using kernel = "+param.kernel_type+" nu = "+param.nu);
 		svm.svm_check_parameter(prob, param);
 		svm_model model =  svm.svm_train(prob, param);
+
 		try {
 			svm.svm_save_model("spam_svm.model",model);
 		} catch (IOException e) {
@@ -103,6 +112,7 @@ public class SVMTest {
 
 		 	reader.close();
         }
+        numFeatures = index;
         System.out.println("Number of features "+index);
 	}
 
@@ -134,9 +144,10 @@ public class SVMTest {
                     }
                 }
             }
-            System.out.println("Number of features "+index);
             reader.close();
         }
+        System.out.println("Number of features "+index);
+        numFeatures = index;
     }
 	protected svm_problem genProblem(List<String> train, boolean cf) throws IOException{
 		/**
@@ -201,11 +212,12 @@ public class SVMTest {
 
         if(rp){
             chooseDataPoints(prob.x);
-            System.out.println("Pairwise distances before random projection ");
+            System.out.println("Reducing dimensionality to "+reducedDimensionSize+" using Random Projection");
+            System.out.println("Pairwise distances between "+numDataPoints/2+" pair of documents before random projection ");
             calculateDistance(randomNodes, prob.x);
             randomProjection = new RandomProjection(reducedDimensionSize, wordMap.size());
             randomProjection.convertToRandomProjection(prob.x);
-            System.out.println("Pairwise distances after random projection ");
+            System.out.println("Pairwise distances between "+numDataPoints/2+" pair of documents before random projection ");
             calculateDistance(randomNodes, prob.x);
         }
         prob.l = train.size();
@@ -230,6 +242,13 @@ public class SVMTest {
                     +" and data Data Node "+(size-i)+" with dimensionality "+nodes[dataNodes.get(size-i-1)].length+" is "*/
                     distanceBetweenVector(nodes[dataNodes.get(i)], nodes[dataNodes.get(size-i-1)]));
         }
+        System.out.println("Vector Similarity");
+        for(int i = 0; i < size/2; i++) {
+            System.out.println(/*"Dot Product between Data Node "+(i+1)+" with dimensionality "+nodes[dataNodes.get(i)].length
+                    +" and data Data Node "+(size-i)+" with dimensionality "+nodes[dataNodes.get(size-i-1)].length+" is "*/
+                    vectorSimilarity(nodes[dataNodes.get(i)], nodes[dataNodes.get(size - i - 1)]));
+        }
+
     }
 
     public double distanceBetweenVector(svm_node[] v1, svm_node[] v2){
@@ -271,7 +290,29 @@ public class SVMTest {
         }
         return Math.sqrt(distance);
     }
-	
+
+    public double vectorSimilarity(svm_node[] v1, svm_node[] v2){
+        double sum = 0.0;
+        int i=0;
+        int j=0;
+        int index1 = 0;
+        int index2 = 0;
+        double value1= 0.0;
+        double value2 = 0.0;
+        while(i < v1.length-1 && j < v2.length-1){
+            index1 = v1[i].index;
+            value1 = v1[i].value;
+            index2 = v2[j].index;
+            value2 = v2[j].value;
+            if(index1 == index2){
+                sum += value1*value2;
+                i++;
+                j++;
+            }
+        }
+        return sum;
+    }
+
 	public void svmPredict(List<String> testFiles) throws IOException{
 		svm_model model = svm.svm_load_model("spam_svm.model");
         String emailPath = null;
