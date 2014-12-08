@@ -28,7 +28,7 @@ public class SVMTest {
     public int ngram = 4;
     private ArrayList<Integer> randomNodes;
     private int numDataPoints = 20;
-    private static String path = "C:/Users/Parag/Desktop/Project/trec07p";
+    private static String path = "dataset";//"C:/Users/Parag/Desktop/Project/trec07p";
     private static String datapath = path + "/data/";
     public double totalHam =0;
     public double totalSpam=0;

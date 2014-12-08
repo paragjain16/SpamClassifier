@@ -31,7 +31,7 @@ public class SVMTestTFIDF {
     public int ngram = 4;
     private ArrayList<svm_node[]> randomNodes;
     private int numDataPoints = 30;
-    private static String path = "C:/Users/Parag/Desktop/Project/trec07p";
+    private static String path = "dataset";//"C:/Users/Parag/Desktop/Project/trec07p";
     private static String datapath = path + "/data/";
     public int numFeatures = 0;
     public double totalHam =0;

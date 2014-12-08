@@ -26,7 +26,7 @@ public class Test {
     static int[] totalHam = new int[interestingTokens.length];
     static int[] totalSpam = new int[interestingTokens.length];
     static long numFeatures;
-    private static String path = "C:/Users/Parag/Desktop/Project/trec07p";
+    private static String path = "dataset";//"C:/Users/Parag/Desktop/Project/trec07p";
     private static String datapath = path + "/data/";
     private static String spamHamFile = path + "/full/index";
 
