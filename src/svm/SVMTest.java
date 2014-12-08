@@ -308,6 +308,10 @@ public class SVMTest {
                 sum += value1*value2;
                 i++;
                 j++;
+            }else if(index1 > index2){
+                j++;
+            }else{
+                i++;
             }
         }
         return sum;
@@ -395,5 +399,9 @@ public class SVMTest {
                     ham++;
         	}
         }
+        System.out.println("\nSpam Accuracy = "+(double)spam/totalSpam*100+
+                "% ("+spam+"/"+totalSpam+") (classification)");
+        System.out.println("Ham Accuracy = "+(double)ham/totalHam*100+
+                "% ("+ham+"/"+totalHam+") (classification)\n");
 	}
 }
