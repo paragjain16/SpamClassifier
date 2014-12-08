@@ -18,8 +18,8 @@ public class Test {
     private static List<String> trainSet;
     private static List<String> spamHams;
     private static boolean crossValidation = true;
-    static int spamCount = 1000;
-    static int hamCount = 1000;
+    static int spamCount = 2000;
+    static int hamCount = 2000;
     static int[] interestingTokens = { 5, 10, 15, 20, 30, 40, 50, 80, 100, Integer.MAX_VALUE};
     static int[] accuracyHam = new int[interestingTokens.length];
     static int[] accuracySpam = new int[interestingTokens.length];
@@ -82,6 +82,10 @@ public class Test {
         svm.setReducedDimensionSize(dimSize);
         svm.cf = cf;
         svm.ngram = ngram;
+        if(rp){
+            spamCount = 1000;
+            hamCount = 1000;
+        }
 		try {
             if(!crossValidation) {
                 int testSpam = (int) (0.2 * spamCount);

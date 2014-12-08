@@ -68,7 +68,7 @@ public class SVMTest {
 		 */
 		svm_parameter param = new svm_parameter();
 		param.svm_type = svm_parameter.NU_SVC;
-		param.kernel_type = svm_parameter.LINEAR;
+		param.kernel_type = svm_parameter.RBF;
 
         param.degree= 1;
 		param.nu = 0.1;
@@ -211,14 +211,14 @@ public class SVMTest {
     	}
 
         if(rp){
-            chooseDataPoints(prob.x);
+            /*chooseDataPoints(prob.x);
             System.out.println("Reducing dimensionality to "+reducedDimensionSize+" using Random Projection");
             System.out.println("Pairwise distances between "+numDataPoints/2+" pair of documents before random projection ");
-            calculateDistance(randomNodes, prob.x);
+            calculateDistance(randomNodes, prob.x);*/
             randomProjection = new RandomProjection(reducedDimensionSize, wordMap.size());
             randomProjection.convertToRandomProjection(prob.x);
-            System.out.println("Pairwise distances between "+numDataPoints/2+" pair of documents before random projection ");
-            calculateDistance(randomNodes, prob.x);
+            /*System.out.println("Pairwise distances between "+numDataPoints/2+" pair of documents after random projection ");
+            calculateDistance(randomNodes, prob.x);*/
         }
         prob.l = train.size();
         System.out.println("[SVM TRAIN END]");
@@ -227,6 +227,7 @@ public class SVMTest {
 
     public void chooseDataPoints(svm_node[][] dataNodes){
         Random r = new Random();
+        randomNodes = new ArrayList<Integer>();
         int size = dataNodes.length;
         int i = numDataPoints;
         while( i > 0 ){
