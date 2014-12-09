@@ -18,14 +18,14 @@ public class Test {
     private static List<String> trainSet;
     private static List<String> spamHams;
     private static boolean crossValidation = true;
-    static int spamCount = 2000;
-    static int hamCount = 2000;
-    static int[] interestingTokens = { 5, 10, 15, 20, 30, 40, 50, 80, 100, Integer.MAX_VALUE};
-    static int[] accuracyHam = new int[interestingTokens.length];
-    static int[] accuracySpam = new int[interestingTokens.length];
-    static int[] totalHam = new int[interestingTokens.length];
-    static int[] totalSpam = new int[interestingTokens.length];
-    static long numFeatures;
+    public static int spamCount = 2000;
+    public static int hamCount = 2000;
+    public static int[] interestingTokens = { 5, 10, 15, 20, 30, 40, 50, 80, 100, Integer.MAX_VALUE};
+    public static int[] accuracyHam = new int[interestingTokens.length];
+    public static int[] accuracySpam = new int[interestingTokens.length];
+    public static int[] totalHam = new int[interestingTokens.length];
+    public static int[] totalSpam = new int[interestingTokens.length];
+    public static long numFeatures;
     private static String path = "dataset";//"C:/Users/Parag/Desktop/Project/trec07p";
     private static String datapath = path + "/data/";
     private static String spamHamFile = path + "/full/index";
@@ -33,12 +33,14 @@ public class Test {
 	public static void main(String[] args) {
         if(args.length < 5){
             System.out.println("USAGE: java -Xmx3g -jar SpamClassifier.jar <arg1> <arg2> <arg3> <arg4> <arg5>");
-            System.out.println("<arg1> - svm or nb - choose svm or naive bayes as classifier");
-            System.out.println("<arg2> - true or false - true if character feature required");
-            System.out.println("<arg3> - 1 0r 2 or...n - n gram for character feature - have to use -1 or any integer if <arg2> is false");
-            System.out.println("<arg4> - true or false - true does dimensionality reduction using random projection - ignored with naive bayes classifier");
-            System.out.println("<arg5> - positive integer greater than zero - reduced dimensionality size - have to use -1 or any integer if <arg4> is false");
+            System.out.println("All arguments are required");
+            System.out.println("<arg1> - svm or nb - choose svm for SVM or nb for naive bayes classifier");
+            System.out.println("<arg2> - true or false - true if character features needs to be used, false if Bag of words features should be used");
+            System.out.println("<arg3> - 3 or 4 or...n - n gram for character feature - have to use any integer even if <arg2> is false");
+            System.out.println("<arg4> - true or false - true if dimensionality reduction using random projection needs to be performed- ignored with naive bayes classifier");
+            System.out.println("<arg5> - positive integer greater than zero - reduced dimensionality size - have to supply any integer even if <arg4> is false");
             System.out.println("Example - java -Xmx3g -jar SpamClassifier.jar svm false 2 true 1000");
+            System.exit(0);
         }
         String classifier = args[0];
         boolean cf = Boolean.parseBoolean(args[1]);
@@ -67,12 +69,14 @@ public class Test {
             svm_test(cf, ngram, rp, dim);
         }else{
             System.out.println("USAGE: java -Xmx3g -jar SpamClassifier.jar <arg1> <arg2> <arg3> <arg4> <arg5>");
-            System.out.println("<arg1> - svm or nb - choose svm or naive bayes as classifier");
-            System.out.println("<arg2> - true or false - true if character feature required");
-            System.out.println("<arg3> - 1 0r 2 or...n - n gram for character feature - have to use -1 or any integer if <arg2> is false");
-            System.out.println("<arg4> - true or false - true if dimensionality reduction wanted using random projection - ignored with naive bayes classifier");
-            System.out.println("<arg5> - positive integer greater than zero - reduced dimensionality size - have to use -1 or any integer if <arg4> is false");
+            System.out.println("All arguments are required");
+            System.out.println("<arg1> - svm or nb - choose svm for SVM or nb for naive bayes classifier");
+            System.out.println("<arg2> - true or false - true if character features needs to be used, false if Bag of words features should be used");
+            System.out.println("<arg3> - 3 or 4 or...n - n gram for character feature - have to use any integer even if <arg2> is false");
+            System.out.println("<arg4> - true or false - true if dimensionality reduction using random projection needs to be performed- ignored with naive bayes classifier");
+            System.out.println("<arg5> - positive integer greater than zero - reduced dimensionality size - have to supply any integer even if <arg4> is false");
             System.out.println("Example - java -Xmx3g -jar SpamClassifier.jar svm false 2 true 1000");
+            System.exit(0);
         }
     }
 	
@@ -330,8 +334,8 @@ public class Test {
                         accuracyHam[i]++;
                     else {
                         //System.out.println("Incorrectly classified as Spam " + line + " having p = " + p);
-                        System.out.println("Incorrectly classified as Spam - " + line + " for "
-                                +(interestingTokens[i]==Integer.MAX_VALUE ? "all tokens ":interestingTokens[i]+" interesting tokens"));
+                        /*System.out.println("Incorrectly classified as Spam - " + line + " for "
+                                +(interestingTokens[i]==Integer.MAX_VALUE ? "all tokens ":interestingTokens[i]+" interesting tokens"));*/
 
                           /*  System.out.println(line + " " + p);
                             System.out.println("\n Incorrect fp " + line + " " + interestingTokens[i]);

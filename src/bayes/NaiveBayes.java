@@ -54,7 +54,7 @@ public class NaiveBayes {
         spamicityMap = new HashMap<String, Double>();
         numberOfSpam = 0;
         numberOfHam = 0;
-        stopWords = new StopWords();
+        //stopWords = new StopWords();
         if(cf){
             this.cf = cf;
             this.ngram = ngram;

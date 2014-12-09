@@ -106,4 +106,9 @@ public class RandomProjection {
     public void setSeed(long seed) {
         this.seed = seed;
     }
+
+    public void free(){
+        rp_matrix = null;
+        System.gc();
+    }
 }

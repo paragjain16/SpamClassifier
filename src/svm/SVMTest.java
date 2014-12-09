@@ -211,10 +211,12 @@ public class SVMTest {
     	}
 
         if(rp){
-            /*chooseDataPoints(prob.x);
             System.out.println("Reducing dimensionality to "+reducedDimensionSize+" using Random Projection");
+            /*chooseDataPoints(prob.x);
             System.out.println("Pairwise distances between "+numDataPoints/2+" pair of documents before random projection ");
             calculateDistance(randomNodes, prob.x);*/
+            if(randomProjection!=null)
+                randomProjection.free();
             randomProjection = new RandomProjection(reducedDimensionSize, wordMap.size());
             randomProjection.convertToRandomProjection(prob.x);
             /*System.out.println("Pairwise distances between "+numDataPoints/2+" pair of documents after random projection ");

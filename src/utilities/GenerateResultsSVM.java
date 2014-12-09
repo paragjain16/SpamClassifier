@@ -1,4 +1,6 @@
-package test;
+package utilities;
+
+import test.Test;
 
 import java.io.*;
 import java.util.HashMap;
